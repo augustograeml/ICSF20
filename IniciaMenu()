@@ -1,0 +1,41 @@
+void IniciaMenu()
+{
+    int decisao;
+    int decisao2;
+    int decisao3;
+
+    printf("1 - Para adicionar elementos: \n");
+    printf("2 - Para retirar elementos: \n");
+    printf("3 - Para listar elementos: \n");
+    scanf("%d", &decisao);
+
+    if(decisao == 1)
+    {
+        apagaMenu();
+        printf("1 - Para adicionar elementos no comeco: \n");
+        printf("2 - Para adicionar elementos no final: \n");
+        printf("3 - Para adicionar elementos no meio: \n");
+        scanf("%d", &decisao2);
+
+        //adicionaElemento(decisao2);
+
+    }
+     if(decisao == 2)
+    {
+        apagaMenu();
+        printf("1 - Para remover elementos no comeco: \n");
+        printf("2 - Para remover elementos no final: \n");
+        printf("3 - Para remover elementos no meio: \n");
+        scanf("%d", &decisao3);
+
+       // removerElemento(decisao3);
+
+    }
+     if(decisao == 3)
+    {
+        apagaMenu();
+       // listarElemento();
+
+    }
+
+}
