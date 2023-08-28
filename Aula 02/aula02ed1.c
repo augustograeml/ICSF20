@@ -3,23 +3,24 @@
 
 struct Header{        //nó
     int tamanho;  //tamanho da lista
-    struct Header *primeiro; //endereço do primeiro
-    struct Header *ultimo;   // endereço do ultimo
+    Header *primeiro; //endereço do primeiro
+    Header *atual;   // endereço do ultimo
 };
 struct Node{
     int informacao;
-    struct Node *anterior;
-    struct Node *proximo;
+    Node *anterior;
+    Node *proximo;
 };
 
 int main()
 {
-    struct Header lista;
+    Header Lista;
     lista.tamanho = 0;
-    struct Node *Ultimo;
+    Node *Atual;
+    Node *Primeiro;
 
 
-        struct Node *Primeiro = (struct Node*) malloc (sizeof (struct Node));
+        Primeiro = (Node*) malloc (sizeof (struct Node));
 
         if (Primeiro != NULL)
         {
@@ -30,23 +31,23 @@ int main()
             //atualização do header
             lista.tamanho++;
             lista.primeiro = &Primeiro;
-            lista.ultimo = &Primeiro;
-            Ultimo->informacao = Primeiro->informacao;
+            lista.atual = &Primeiro;
+            Atual->informacao = Primeiro->informacao;
         }
 
-    while(Ultimo->informacao != 0)
+    while(Atual->informacao != 0)
     {
-        struct Node *Ultimo = malloc (sizeof (Node));
+        struct Node *Atual = malloc (sizeof (Node));
 
         if (Ultimo != NULL)
         {
             printf("Digite a idade OU zero se nao quiser mais informar");
             scanf("%d", &Ultimo.informacao);
-            Ultimo->anterior = &Ultimo;
-            Ultimo->proximo = NULL;
+            Atual->anterior = &Ultimo;
+            Atual->proximo = NULL;
             //atualização do header
             lista.tamanho++;
-            lista->ultimo = &Ultimo;
+            lista->atual = &Atual;
 
         }
     }
