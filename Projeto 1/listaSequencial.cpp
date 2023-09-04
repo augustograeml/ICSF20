@@ -3,53 +3,78 @@
 #include <string>
 #include <string.h>
 #include <stdio.h>
+#define TAMANHO 10
 using namespace std;
 
-class Node {
 
+class Pessoa{
 public:
-    char RG[10];
-    char nome[30];
+    string RG;
+    string nome;
 };
 
 class Lista {
-
-private:
-    Pessoa *listaDePessoas;
-    int tamanho;
-
-
+public:
+    int tamanho = TAMANHO;
+    Pessoa listaDePessoas[10];
 };
 
-
+void ImprimeMenu1(Lista *Primeira);
 
 int main()
 {
-    Node Lista[7];
+    Lista *Primeira = new Lista;
 
-    for(int i = 0; i < 7; i++)
-    {
-        Node Lista[i] =  new Node;
+    Pessoa augusto;
 
-        cout << "Digite um Nome:" <<endl;
-        cin.get(Lista[i]->nome, 30);
-        cin.ignore();
+    ImprimeMenu1(Primeira);
 
-        cout << "Digite um RG: " <<endl;
-        cin.get(Lista[i]->RG, 10);
-        cin.ignore();
 
-    }
 
-     for(int i = 0; i < 7; i++)
-    {
-        cout << Lista[i]->nome << " -- " << Lista[i]->RG <<endl;
-    }
 
-    delete [] Lista;
+
+
+
 
   return 0;
 }
+void ImprimeMenu1(Lista *Primeira)
+{
+    int decisao;
+    int i = 0;
+
+    while(i < TAMANHO)
+    {
+
+        cout << "1- adicionar mais pessoas" << endl << "2- Imprimir Lista " << endl << "3 - parar de adicionar pessoas" << endl;
+        cin >> decisao;
+
+        switch(decisao)
+            {
+                case 1:
+                    cout << "Digite um Nome:" <<endl;
+                    cin >> Primeira->listaDePessoas[i].nome;
+                    cin.ignore();
+
+                    cout << "Digite um RG: " <<endl;
+                    cin >> Primeira->listaDePessoas[i].RG;
+                    cin.ignore();
+
+                    Primeira->tamanho++;
+                    i++;
+                    break;
+
+                case 2:
+                    for(int j = 0; j < TAMANHO; j++)
+                    {
+                        cout << Primeira->listaDePessoas[j].nome << " -- " << Primeira->listaDePessoas[j].RG <<endl;
+                    }
+                    break;
 
 
+                default:
+                    break;
+            }
+    }
+}
 
