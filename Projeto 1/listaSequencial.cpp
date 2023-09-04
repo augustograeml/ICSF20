@@ -61,7 +61,7 @@ void geraLista(Lista *Primeira)
       {
         while (getline(myfile, &line))
         {
-
+//MUDAR ISSO AQUI PARA USAR O FSCANF E FETC
          getline(line, nome, ',');
          getline(line, RG); // to int depois para transformar rg para inteiro
 
