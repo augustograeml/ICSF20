@@ -3,55 +3,122 @@
 #include <string>
 #include <string.h>
 #include <stdio.h>
+#include<windows.h>
+#include <time.h>
 #define TAMANHO 10
+#define TAMANHOVETOR 40
+
+#define MYFILE "NomeRG10.txt"
+#define SAIDA "saidanova10M.txt"
+
 using namespace std;
 
-int tamanho_variavel = 10;
+int tamanho_variavel = TAMANHO;
 
 class Pessoa{
 public:
     int RG;
     char nome[30];
+    int posicao;
+    Pessoa *pProxima;
 };
 
-class Lista {
+class ListaSequencial {
 public:
-    int tamanho = 10;
-    Pessoa listaDePessoas[50];
+    Pessoa listaDePessoas[TAMANHOVETOR];
 };
 
-void ImprimeMenu1(Lista *Primeira);
-void geraLista(Lista *Primeira);
+class ListaEncadeada {
+public:
+    Pessoa *primeira;
+    int tamanho;
 
-void adicionaNoInicio(Lista* Primeira);
-void adicionaNoFinal(Lista* Primeira);
-void adicionaNaN(Lista* Primeira);
+    ListaEncadeada()
+    {
+        primeira = NULL;
+        tamanho = 0;
+    }
+};
 
-void removeDoInicio(Lista* Primeira);
-void removeDoFinal(Lista* Primeira);
-void removeDaN(Lista* Primeira);
+void ImprimeMenu2(ListaEncadeada *Lista);
+
+void geraListaEncadeada(ListaEncadeada *Lista);
+Pessoa* criaPessoa();
+void ImprimeListaEncadeada(ListaEncadeada *Lista);
+
+void adicionaNoInicioEncadeada(ListaEncadeada *Lista);
+void adicionaNoFinalEncadeada(ListaEncadeada *Lista);
+void adicionaNaNEncadeada(ListaEncadeada *Lista);
+
+//############################# INICIO LISTA SEQUENCIAL FUNCOES ##############################
+
+void ImprimeMenu1(ListaSequencial *Primeira);
+
+void geraListaSequencial(ListaSequencial *Primeira);
+void escreveListaSequencial(ListaSequencial *Primeira);
+
+void adicionaNoInicio(ListaSequencial* Primeira);
+void adicionaNoFinal(ListaSequencial* Primeira);
+void adicionaNaN(ListaSequencial* Primeira);
+
+void removeDoInicio(ListaSequencial* Primeira);
+void removeDoFinal(ListaSequencial* Primeira);
+void removeDaN(ListaSequencial* Primeira);
 
 int main()
 {
+    ListaSequencial *Primeira = new ListaSequencial;
 
-    Lista *Primeira = new Lista;
+    ListaEncadeada *Lista = new ListaEncadeada;
+    Lista->primeira = NULL;
 
-    geraLista(Primeira);
+    int escolha;
+    cout << "Qual lista deseja utilizar?" << endl << "1- Sequencial" << endl << "2- Encadeada" << endl;
+    cin >> escolha;
+    switch(escolha)
+    {
+    case 1:
+        {
+        double tempo_gasto1 = 0.0;
+        clock_t comeco = clock();
 
-    ImprimeMenu1(Primeira);
+        geraListaSequencial(Primeira);
+
+        clock_t fim = clock();
+        tempo_gasto1 += (double) (fim - comeco)/CLOCKS_PER_SEC;
+
+        printf ("Tempo gasto para gerar a lista sequencial %f\n", tempo_gasto1);
+
+        ImprimeMenu1(Primeira);
+        break;
+        }
 
 
+    case 2:
+        {
+        double tempo_gasto2 = 0.0;
+        clock_t inicio = clock();
 
+        geraListaEncadeada(Lista);
 
+        clock_t termino = clock();
+        tempo_gasto2 += (double) (termino - inicio) / CLOCKS_PER_SEC;
 
+        printf("Tempo gasto para gerar a lista Encadeada %f \n", tempo_gasto2);
 
+        ImprimeMenu2(Lista);
+         break;
+        }
 
+    }
 
+    delete Primeira;
+    delete Lista;
   return 0;
 }
-void geraLista(Lista *Primeira)
+void geraListaSequencial(ListaSequencial *Primeira)
 {
-     char url[]="NomeRG10.txt";
+     char url[]= MYFILE;
      FILE *arq;
      int i = 0;
 
@@ -60,86 +127,282 @@ void geraLista(Lista *Primeira)
      if(arq == NULL)
        printf("Erro, nao foi possivel abrir o arquivo\n");
      else
-      while( (fscanf(arq," %[^,],%d\n", Primeira->listaDePessoas[i].nome, &Primeira->listaDePessoas[i].RG))!=EOF )
-       i++;
+      while(i < tamanho_variavel && fscanf(arq," %[^,],%d", Primeira->listaDePessoas[i].nome, &Primeira->listaDePessoas[i].RG)!=EOF )
+      {
+            i++;
+      }
+
 
      fclose(arq);
-
-
-
 }
-void ImprimeMenu1(Lista *Primeira)
+void escreveListaSequencial(ListaSequencial *Primeira)
 {
-    int decisao;
-    int decisao2;
-    int decisao3;
+    char url[] = SAIDA;
+    FILE *arq;
+    arq = fopen(url, "w");
+
+    if (arq == NULL)
+    {
+        printf("Erro, não foi possível criar o arquivo\n");
+        return;
+    }
+
+    for (int i = 0; i < tamanho_variavel - 1; i++)
+    {
+        fprintf(arq, "%s,%d\n", Primeira->listaDePessoas[i].nome, Primeira->listaDePessoas[i].RG);
+    }
+
+    fclose(arq);
+}
+void ImprimeMenu1(ListaSequencial *Primeira)
+{
+    int decisao = 0;
+    int decisao2 = 0;
+    int decisao3 = 0;
+    int registroGeral = 0;
     int i = 0;
 
     while(decisao != 4)
     {
 
-        cout << "1- Adicionar mais pessoas" << endl << "2- Imprimir Lista " << endl << "3- Remover pessoas" << endl << "4- Quit" << endl;
+        cout <<"0- Procurar por RG" <<endl << "1- Adicionar mais pessoas" << endl << "2- Imprimir Lista " << endl << "3- Remover pessoas" << endl << "4- Quit" << endl;
         cin >> decisao;
 
         switch(decisao)
             {
+                case 0:
+                {
+                    system("cls");
+                    double tempoDeProcura = 0.0;
+                    int n = 0;
+
+                    cout << "Insira o RG que deseja procurar: " <<endl;
+                    cin >> registroGeral;
+
+                    clock_t iniciodetempodeprocura = clock();
+                    for(i = 0; i < tamanho_variavel; i++)
+                    {
+                        if (Primeira->listaDePessoas[i].RG == registroGeral )
+                        {
+                            clock_t fimdetempodeprocura = clock();
+                            tempoDeProcura += (double) (fimdetempodeprocura - iniciodetempodeprocura) / CLOCKS_PER_SEC;
+
+                            cout << Primeira->listaDePessoas[i].nome << " " << Primeira->listaDePessoas[i].RG <<endl;
+                            cout << "Esta na posicao " << i+1 << " da lista" <<endl;
+                            printf("O tempo de procura foi de %f segundos \n", tempoDeProcura);
+                            cout << "O numero de comparacoes foi de " << n << endl;
+
+
+                        }
+                        n++;
+                    }
+                    break;
+                 }
                 case 1:
-                    cout << "1- Adicionar no inicio" << endl << "2- Adicionar no final " << endl << "3 - Adicionar na posicao N" << endl;
+                    {
+                        system("cls");
+
+                        cout << "1- Adicionar no inicio" << endl << "2- Adicionar no final " << endl << "3- Adicionar em posicao especifica" << endl;
+                        cin >> decisao2;
+
+                        switch(decisao2)
+                        {
+                            case 1:
+                                adicionaNoInicio(Primeira);
+                                break;
+
+                            case 2:
+                                adicionaNoFinal(Primeira);
+                                break;
+
+                            case 3:
+                                adicionaNaN(Primeira);
+                                break;
+
+                            default:
+                                cout << "OPERACAO INVALIDA" << endl;
+                                break;
+                        }
+                    break;
+                    }
+                case 2:
+                    {
+                        system("cls");
+
+                        for(int j = 0; j < tamanho_variavel ; j++)
+                        {
+                            cout << Primeira->listaDePessoas[j].nome << " -- " << Primeira->listaDePessoas[j].RG <<endl;
+                        }
+                        break;
+                    }
+
+                case 3:
+                    {
+                      system("cls");
+
+                    cout << "1- Remove do inicio" << endl << "2- Remove do final " << endl << "3 - Remove da posição N" << endl;
+                    cin >> decisao3;
+
+                        switch(decisao3)
+                        {
+                            case 1:
+                                removeDoInicio(Primeira);
+                                break;
+
+                            case 2:
+                                removeDoFinal(Primeira);
+                                break;
+
+                            case 3:
+                                removeDaN(Primeira);
+                                break;
+
+                            default:
+                                system("cls");
+                                cout << "OPERACAO INVALIDA"<<endl;
+                                break;
+                        }
+                    break;
+                    }
+
+                case 4:
+                    escreveListaSequencial(Primeira);
+                    exit(0);
+                    break;
+
+
+                default:
+                    system("cls");
+                    cout << "OPCAO INDISPONIVEL" <<endl;
+                    break;
+            }
+
+    }
+}
+void ImprimeMenu2(ListaEncadeada *Lista)  /**$$$$$$$$$$$$$$$$$$$$$$$ MENU 2 $$$$$$$$$$$$$$$$$$$$$$$$$**/
+{
+    int decisao = 0;
+    int decisao2 = 0;
+    int decisao3 = 0;
+    int registroGeral = 0;
+    int i = 0;
+
+    while(decisao != 4)
+    {
+
+        cout <<"0- Procurar por RG" <<endl << "1- Adicionar mais pessoas" << endl << "2- Imprimir Lista " << endl << "3- Remover pessoas" << endl << "4- Quit" << endl;
+        cin >> decisao;
+
+        switch(decisao)
+            {
+                case 0:
+                {
+                    system("cls");
+                    double tempoDeProcura = 0.0;
+                    int n = 0;
+                    Pessoa* pAux = Lista->primeira;
+                    int registroGeral;
+
+                    cout << "Insira o RG que deseja procurar: " <<endl;
+                    cin >> registroGeral;
+
+                    clock_t iniciodetempodeprocura = clock();
+                    if(Lista == NULL)
+                    {
+                        cerr << "A LISTA ESTA VAZIA!" << endl;
+                    }
+                    else
+                    {
+                       while(pAux != NULL)
+                        {
+                            if (pAux->RG == registroGeral )
+                            {
+                                clock_t fimdetempodeprocura = clock();
+                                tempoDeProcura += (double) (fimdetempodeprocura - iniciodetempodeprocura) / CLOCKS_PER_SEC;
+
+                                cout << pAux->nome << " " << pAux->RG <<endl;
+                                cout << "Esta na posicao " << pAux->posicao << " da lista" <<endl;
+                                printf("O tempo de procura foi de %f segundos \n", tempoDeProcura);
+                                cout << "O numero de comparacoes foi de " << n << endl;
+
+
+                            }
+                            pAux = pAux->pProxima;
+                            n++;
+                        }
+                    }
+
+                    break;
+                 }
+                case 1:
+                    system("cls");
+
+                    cout << "1- Adicionar no inicio" << endl << "2- Adicionar no final " << endl << "3- Adicionar em posicao especifica" << endl;
                     cin >> decisao2;
 
                     switch(decisao2)
                     {
                         case 1:
-                            adicionaNoInicio(Primeira);
+                            adicionaNoInicioEncadeada(Lista);
                             break;
 
                         case 2:
-                            adicionaNoFinal(Primeira);
+                            adicionaNoFinalEncadeada(Lista);
                             break;
 
                         case 3:
-                            adicionaNaN(Primeira);
+                            adicionaNaNEncadeada(Lista);
                             break;
 
                         default:
+                            cout << "OPERACAO INVALIDA" << endl;
                             break;
                     }
-                    i++;
                     break;
 
                 case 2:
-                    for(int j = 0; j < tamanho_variavel; j++)
-                    {
-                        cout << Primeira->listaDePessoas[j].nome << " -- " << Primeira->listaDePessoas[j].RG <<endl;
-                    }
+                    system("cls");
+                    ImprimeListaEncadeada(Lista);
                     break;
 
                 case 3:
+                    system("cls");
+
                     cout << "1- Remove do inicio" << endl << "2- Remove do final " << endl << "3 - Remove da posição N" << endl;
                     cin >> decisao3;
 
                     switch(decisao3)
                     {
                         case 1:
-                            removeDoInicio(Primeira);
+                           // removeDoInicio(Primeira);
                             break;
 
                         case 2:
-                            removeDoFinal(Primeira);
+                           // removeDoFinal(Primeira);
                             break;
 
                         case 3:
-                            removeDaN(Primeira);
+                           // removeDaN(Primeira);
+                            break;
+
+                        default:
+                            system("cls");
+                            cout << "OPERACAO INVALIDA"<<endl;
                             break;
                     }
+                    break;
                 case 4:
+                    //escreveListaSequencial(Primeira);
                     exit(0);
                     break;
 
 
                 default:
+                    system("cls");
+                    cout << "OPCAO INDISPONIVEL" <<endl;
                     break;
             }
+
     }
 }
 
@@ -156,18 +419,23 @@ void ImprimeMenu1(Lista *Primeira)
     Primeira->tamanho++;
     i++;
 
-**/
-void adicionaNoInicio(Lista* Primeira){
+################################################ INICIO DAS FUNCOES DA LISTA SEQUENCIAL ####################################### **/
 
-    tamanho_variavel++;
+void adicionaNoInicio(ListaSequencial* Primeira){
 
-    for(int i= tamanho_variavel-1; i > 0 ; i--)
+    tamanho_variavel= tamanho_variavel + 1;
+    double tempoparaadicionarsequencial = 0.0;
+    clock_t iniciodaadicao = clock();
+
+    for(int i= tamanho_variavel - 1; i > 0 ; i--)
     {
         strcpy(Primeira->listaDePessoas[i].nome , Primeira->listaDePessoas[i-1].nome);
         Primeira->listaDePessoas[i].RG = Primeira->listaDePessoas[i-1].RG;
     }
+    clock_t fimdaadicao = clock();
+    tempoparaadicionarsequencial += (double) (fimdaadicao - iniciodaadicao) / CLOCKS_PER_SEC;
 
-    cout << "Digite um Nome:" <<endl;
+    cout << "Digite um Nome: " <<endl;
     cin >> Primeira->listaDePessoas[0].nome;
     cin.ignore();
 
@@ -175,9 +443,13 @@ void adicionaNoInicio(Lista* Primeira){
     cin >> Primeira->listaDePessoas[0].RG;
     cin.ignore();
 
-
+     cout << Primeira->listaDePessoas[0].nome << " " << Primeira->listaDePessoas[0].RG <<endl;
+     cout << "Esta na posicao " << 1 << " da lista" <<endl;
+     printf("O tempo de execucao foi de %f segundos \n", tempoparaadicionarsequencial);
+     cout << "O numero de comparacoes foi de " << 0 << endl;
+     cout << tamanho_variavel <<endl;
 }
-void adicionaNoFinal(Lista* Primeira){
+void adicionaNoFinal(ListaSequencial* Primeira){
 
     tamanho_variavel++;
 
@@ -189,20 +461,28 @@ void adicionaNoFinal(Lista* Primeira){
     cin >> Primeira->listaDePessoas[tamanho_variavel - 1 ].RG;
     cin.ignore();
 
-}
-void adicionaNaN(Lista* Primeira){
+    cout << Primeira->listaDePessoas[tamanho_variavel - 1].nome << " " << Primeira->listaDePessoas[tamanho_variavel - 1].RG <<endl;
+     cout << "Esta na posicao " << tamanho_variavel << " da lista" <<endl;
+     printf("O tempo de execucao foi de 0 segundos \n");
+     cout << "O numero de comparacoes foi de " << 0 << endl;
 
+}
+void adicionaNaN(ListaSequencial* Primeira){
+
+    double tempodeadicao = 0.0;
     int posicao;
     tamanho_variavel++;
 
-    cout << "Em qual posicao deseja incluir: 1 - " << tamanho_variavel + 1 << endl;
+    cout << "Em qual posicao deseja incluir: 1 - " << tamanho_variavel << endl;
     cin >> posicao;
 
+    clock_t iniciodaadicao = clock();
     for(int i= tamanho_variavel-1; i > posicao -1 ; i--)
     {
         strcpy(Primeira->listaDePessoas[i].nome , Primeira->listaDePessoas[i-1].nome);
         Primeira->listaDePessoas[i].RG = Primeira->listaDePessoas[i-1].RG;
     }
+    clock_t fimdaadicao = clock();
 
     cout << "Digite um Nome:" <<endl;
     cin >> Primeira->listaDePessoas[posicao -1].nome;
@@ -212,9 +492,268 @@ void adicionaNaN(Lista* Primeira){
     cin >> Primeira->listaDePessoas[posicao -1 ].RG;
     cin.ignore();
 
+    cout << Primeira->listaDePessoas[posicao - 1].nome << " " << Primeira->listaDePessoas[posicao -1].RG <<endl;
+     cout << "Esta na posicao " << posicao << " da lista" <<endl;
+     printf("O tempo de execucao foi de %f segundos \n", tempodeadicao);
+     cout << "O numero de comparacoes foi de " << 0 << endl;
 
 }
 
-void removeDoInicio(Lista* Primeira){}
-void removeDoFinal(Lista* Primeira){}
-void removeDaN(Lista* Primeira){}
+void removeDoInicio(ListaSequencial* Primeira){
+    double tempoderemove = 0.0;
+
+    cout << Primeira->listaDePessoas[0].nome << " " << Primeira->listaDePessoas[0].RG <<endl;
+    cout << "Sera removido da posicao " << 1 << " da lista" <<endl;
+
+    if(tamanho_variavel > 0)
+    {
+        clock_t inicio = clock();
+        for(int i= 0; i < tamanho_variavel - 1 ; i++)
+        {
+            strcpy(Primeira->listaDePessoas[i].nome , Primeira->listaDePessoas[i+1].nome);
+            Primeira->listaDePessoas[i].RG = Primeira->listaDePessoas[i+1].RG;
+        }
+         tamanho_variavel--;
+         clock_t fim = clock();
+
+         tempoderemove += (double) (fim - inicio)/ CLOCKS_PER_SEC;
+
+         strcpy(Primeira->listaDePessoas[tamanho_variavel].nome, "");
+         Primeira->listaDePessoas[tamanho_variavel].RG = 0;
+    }
+    else
+        cout << "A lista esta vazia" <<endl;
+
+     printf("O tempo de execucao foi de %f segundos \n", tempoderemove);
+     cout << "O numero de comparacoes foi de " << 0 << endl;
+}
+void removeDoFinal(ListaSequencial* Primeira)
+{
+    double tempoderemove = 0.0;
+    cout << Primeira->listaDePessoas[tamanho_variavel].nome << " " << Primeira->listaDePessoas[tamanho_variavel].RG <<endl;
+    cout << "Sera removido da posicao " << tamanho_variavel << " da lista" <<endl;
+
+    if(tamanho_variavel > 0)
+    {
+       clock_t inicio = clock();
+       for(int i= tamanho_variavel-1; i > 0 ; i--)
+        {
+            strcpy(Primeira->listaDePessoas[i].nome , Primeira->listaDePessoas[i-1].nome);
+            Primeira->listaDePessoas[i].RG = Primeira->listaDePessoas[i-1].RG;
+        }
+        tamanho_variavel--;
+        clock_t fim = clock();
+
+        tempoderemove += (double) (fim - inicio)/ CLOCKS_PER_SEC;
+
+         strcpy(Primeira->listaDePessoas[0].nome, "");
+         Primeira->listaDePessoas[0].RG = 0;
+
+         printf("O tempo de execucao foi de %f segundos \n", tempoderemove);
+         cout << "O numero de comparacoes foi de " << 0 << endl;
+
+    }
+    else
+        cout << "A lista esta vazia" <<endl;
+
+}
+void removeDaN(ListaSequencial* Primeira)
+{
+    int posicao = 0;
+    double tempoderemove = 0.0;
+
+    if(tamanho_variavel > 0)
+    {
+        cout << "Em qual posicao deseja remover: 1 - " << tamanho_variavel << endl;
+        cin >> posicao;
+
+        cout << Primeira->listaDePessoas[posicao-1].nome << " " << Primeira->listaDePessoas[posicao-1].RG <<endl;
+        cout << "Sera removido da posicao " << posicao << " da lista" <<endl;
+
+        clock_t inicio = clock();
+        for(int i= posicao-1; i < tamanho_variavel - 1 ; i++)
+        {
+            strcpy(Primeira->listaDePessoas[posicao-1].nome , Primeira->listaDePessoas[i+1].nome);
+            Primeira->listaDePessoas[posicao-1].RG = Primeira->listaDePessoas[i+1].RG;
+        }
+         tamanho_variavel--;
+         clock_t fim = clock();
+
+        tempoderemove += (double) (fim - inicio)/ CLOCKS_PER_SEC;
+
+         strcpy(Primeira->listaDePessoas[tamanho_variavel].nome, "");
+         Primeira->listaDePessoas[tamanho_variavel].RG = 0;
+    }
+    else
+        cout << "A lista esta vazia" <<endl;
+
+        printf("O tempo de execucao foi de %f segundos \n", tempoderemove);
+        cout << "O numero de comparacoes foi de " << 0 << endl;
+
+
+}
+/**###################################### FINAL DAS FUNCOES LISTA SEQUENCIAL #####################################################**/
+
+Pessoa* criaPessoa()
+ {
+     Pessoa* nova = new Pessoa;
+     return nova;
+ }
+void geraListaEncadeada(ListaEncadeada* Lista)
+{
+    Pessoa *pAux = criaPessoa();
+    Lista->primeira = pAux;
+
+    char url[]= MYFILE;
+    FILE *arq;
+    int i = 1;
+    char nome[30];
+    int rg;
+
+    arq = fopen(url, "r");
+
+    if(arq == NULL)
+       cerr << "Erro, nao foi possivel abrir o arquivo" << endl;
+     else
+      while(i < (tamanho_variavel) && fscanf(arq," %[^,],%d", nome, &rg) !=EOF )
+      {
+         strcpy(pAux->nome,nome);
+         pAux->RG = rg;
+         pAux->posicao = i;
+         Pessoa*  Novo = criaPessoa();
+         pAux->pProxima = Novo;
+         pAux = pAux->pProxima;
+         i++;
+      }
+
+     pAux->pProxima = NULL;
+     Lista->tamanho += tamanho_variavel;
+     fclose(arq);
+
+
+}
+void adicionaNoInicioEncadeada(ListaEncadeada *Lista)
+{
+    Pessoa *Novo = criaPessoa();
+    Lista->tamanho++;
+
+    if(Lista->primeira == NULL)
+    {
+        Lista->primeira = Novo;
+        Novo->posicao = 1;
+        Novo->pProxima = NULL;
+    }
+    else
+    {
+        Pessoa *pAux = Lista->primeira;
+        Lista->primeira = Novo;
+        Novo->pProxima = pAux;
+        Novo->posicao = 1;
+        for(int i = 2; i < (Lista->tamanho + 1) && pAux->pProxima != NULL; i++)
+        {
+            pAux->posicao = i;
+            pAux = pAux->pProxima;
+        }
+    }
+
+
+    cout << "Digite um Nome:" <<endl;
+    cin >> Novo->nome;
+    cin.ignore();
+
+    cout << "Digite um RG: " <<endl;
+    cin >> Novo->RG;
+    cin.ignore();
+
+    cout << Novo->nome << " " << Novo->RG <<endl;
+     cout << "Esta na posicao " << Novo->posicao << " da lista" <<endl;
+    // printf("O tempo de execucao foi de %f segundos \n", tempodeadicao);
+     //cout << "O numero de comparacoes foi de " << 0 << endl;
+
+
+}
+void adicionaNoFinalEncadeada(ListaEncadeada *Lista)
+{
+    Pessoa *pAux = Lista->primeira;
+    Pessoa *Novo = criaPessoa();
+
+    while(pAux->pProxima != NULL)
+    {
+        pAux = pAux->pProxima;
+    }
+    pAux->pProxima = Novo;
+    Lista->tamanho++;
+    Novo->posicao = Lista->tamanho;
+    Novo->pProxima = NULL;
+
+    cout << "Digite um Nome:" <<endl;
+    cin >> Novo->nome;
+    cin.ignore();
+
+    cout << "Digite um RG: " <<endl;
+    cin >> Novo->RG;
+    cin.ignore();
+
+    cout << Novo->nome << " " << Novo->RG <<endl;
+     cout << "Esta na posicao " << Novo->posicao << " da lista" <<endl;
+    // printf("O tempo de execucao foi de %f segundos \n", tempodeadicao);
+     //cout << "O numero de comparacoes foi de " << 0 << endl;
+
+
+}
+void adicionaNaNEncadeada(ListaEncadeada *Lista) //ESTÁ ADICIONANDO UMA PARA CIMA
+{
+    Pessoa *pAux = Lista->primeira;
+    Pessoa *pAux2;
+    Pessoa *Novo = criaPessoa();
+    Lista->tamanho++;
+    int posicao;
+
+    cout << "Em qual posicao deseja incluir: 1 - " << Lista->tamanho  << endl;
+    cin >> posicao;
+
+    while(pAux->posicao != posicao)
+    {
+        pAux = pAux->pProxima;
+    }
+    pAux2 = pAux->pProxima;
+    pAux->pProxima = Novo;
+    Novo->pProxima = pAux2;
+    Novo->posicao = posicao;
+
+    while(pAux != NULL)
+    {
+        pAux->posicao = posicao++;
+        pAux = pAux->pProxima;
+    }
+
+    cout << "Digite um Nome:" <<endl;
+    cin >> Novo->nome;
+    cin.ignore();
+
+    cout << "Digite um RG: " <<endl;
+    cin >> Novo->RG;
+    cin.ignore();
+
+    cout << Novo->nome << " " << Novo->RG <<endl;
+     cout << "Esta na posicao " << Novo->posicao  << " da lista" <<endl;
+    // printf("O tempo de execucao foi de %f segundos \n", tempodeadicao);
+     //cout << "O numero de comparacoes foi de " << 0 << endl;
+
+
+}
+void ImprimeListaEncadeada(ListaEncadeada *Lista)
+{
+    Pessoa *pAux = criaPessoa();
+    pAux = Lista->primeira;
+    if(Lista == NULL)
+    {
+        cerr << "ERRO! A LISTA ESTA VAZIA!" << endl;
+    }
+    while(pAux != NULL)
+    {
+        cout << pAux->nome << " " << pAux->RG << endl;
+        pAux = pAux->pProxima;
+    }
+
+}
