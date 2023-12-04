@@ -1,0 +1,150 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+#include <vector>
+#include <algorithm>
+
+#define ARQUIVO_TEXTO "Historia.txt"
+
+class Palavra
+{
+    public:
+    Palavra()
+    {
+        posicao.clear();
+    }
+    ~Palavra()
+    {
+        posicao.clear();
+    }
+    std::string palavra = "";
+    vector<int> posicao;
+    Palavra* pProx = nullptr;
+};
+
+class Invertido
+{
+    public:
+    Invertido()
+    {
+        palavras.clear();
+    }
+    ~Invertido()
+    {
+        palavras.clear();
+    }
+
+    vector<Palavra*> palavras;
+
+};
+
+void leArquivo(string caminho, Invertido* a);
+void organizaArquivoInvertido(Invertido* a);
+void imprimeArquivoInvertido(Invertido* a);
+void menu();
+
+int main()
+{
+
+    Invertido* invertido = new Invertido;
+    int decisao = -1;
+    
+
+    while(decisao != 4)
+    {
+        menu();
+        cin >> decisao;
+
+        switch(decisao)
+        {
+            case 1:
+                 leArquivo(ARQUIVO_TEXTO, invertido);
+                 organizaArquivoInvertido(invertido);
+                break;
+            case 2:
+                 imprimeArquivoInvertido(invertido);
+                break;
+
+            case 3:
+                {
+
+                }
+                break;
+
+            default:
+                break;
+
+        }   
+    }
+
+}
+
+void leArquivo(string caminho , Invertido* a)
+{
+     ifstream arquivo(caminho);
+     string linha;
+     int posLetra = 0;
+     int num_palavras = 0;
+
+        if (!arquivo.is_open())
+        {
+            cerr << "ERRO ao abrir arquivo! " << endl;
+        }
+
+        while (getline(arquivo, linha, ' ')  && num_palavras < 27)
+        {
+            Palavra *aux = new Palavra;
+            aux->pProx = new Palavra;
+
+            aux->posicao.push_back(posLetra);
+            aux->palavra = linha;
+            posLetra += linha.size() + 1;
+            a->palavras.push_back(aux);
+            cout << aux->palavra << endl;
+            aux = aux->pProx;
+            num_palavras++;
+        }
+}
+void organizaArquivoInvertido(Invertido* a)
+{
+     Palavra* procura;
+       for(int i = 0; i < a->palavras.size(); i++)
+       {
+             procura = a->palavras[i];
+            if(procura->palavra == "Ola")
+            cout << "oi" << endl;
+            for(int j = i+1; j < a->palavras.size() - i; j++)
+            {
+                if(a->palavras[j]->palavra == procura->palavra)
+                {
+                    cout << a->palavras[j]->posicao[0] << endl;
+                    procura->posicao.push_back(a->palavras[j]->posicao[0]);
+                    a->palavras.erase(remove(a->palavras.begin(),a->palavras.end(), a->palavras[j]),a->palavras.end());
+                }
+            }
+       }
+}
+
+
+void imprimeArquivoInvertido(Invertido* a)
+{
+  for(int i = 0; i < a->palavras.size(); i++)
+
+  {
+      cout << a->palavras[i]->palavra << " - ";
+      for (int j = 0; j < a->palavras[i]->posicao.size(); j++)
+      {
+          cout << "[" << a->palavras[i]->posicao[j] << ",";
+      }
+      cout << "]" << endl;
+  }
+}
+
+void menu()
+{
+    cout << "1- Ler arquivo" << endl
+         << "2- Mostrar arquivo invertido" << endl
+         << "3- Buscar palavra" << endl
+         << "4- Sair" << endl;
+}
